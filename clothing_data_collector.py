@@ -5,14 +5,15 @@ database = 'clothing_data.db'
 with sqlite3.connect(database) as conn:
     cursor = conn.cursor()
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS WeatherClothing (
+    CREATE TABLE IF NOT EXISTS ClothingWeather (
         Date DATE,
         Time INT,
         Location TEXT,
         WeatherData TEXT,
         ClothingData TEXT,
         SportsData TEXT,
-        OtherData TEXT
+        OtherData TEXT,
+        ActivityData TEXT
     )
     ''')
     conn.commit()
@@ -103,7 +104,7 @@ weather_emojis = {
 }
 
 # function to add data to SQLite database
-def add_data(date, time, location, weather, outerwear, bottoms, footwear, accessories, sports, other_data=None, database=database):
+def add_data(date, time, location, weather, outerwear, bottoms, footwear, accessories, sports, activities, other_data=None, database=database):
     with sqlite3.connect(database) as conn:
         cursor = conn.cursor()
         # Convert dictionaries to JSON strings
@@ -115,30 +116,33 @@ def add_data(date, time, location, weather, outerwear, bottoms, footwear, access
             "accessories": accessories,
         })
         sports_json = json.dumps(sports)
+        activity_json = json.dumps(activities)
         cursor.execute('''
-        INSERT INTO WeatherClothing (
+        INSERT INTO ClothingWeather (
                         Date, 
                         Time, 
                         Location, 
                         WeatherData,
                         ClothingData,
                         SportsData,
-                        OtherData
+                        OtherData,
+                        ActivityData
                     )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (date, time, location, weather_json, clothing_json, sports_json, other_data))
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (date, time, location, weather_json, clothing_json, sports_json, other_data, activity_json))
+        print("Data added successfully.")
         conn.commit()
-
+    
 def remove_last_entry(database=database):
     """
-    Removes the last entry from the WeatherClothing table.
+    Removes the last entry from the ClothingWeather table.
 
     Parameters:
     - database: str, the path to the SQLite database file.
     """
     with sqlite3.connect(database) as conn:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM WeatherClothing WHERE rowid = (SELECT MAX(rowid) FROM WeatherClothing)")
+        cursor.execute("DELETE FROM ClothingWeather WHERE rowid = (SELECT MAX(rowid) FROM ClothingWeather)")
         conn.commit()
 
 # functions to get user input
@@ -172,6 +176,8 @@ def get_clothing_input(options, prompt):
                     options["athletic"] = True
                 case "Footwear":
                     options["running"] = True
+                case "Activity":
+                    options["walking"] = True
                 case _:
                     return
             return
@@ -238,13 +244,17 @@ get_clothing_input(bottoms, "Bottoms")
 get_clothing_input(footwear, "Footwear")
 get_clothing_input(accessories, "Accessories")
 
-print("Would you play sports in this weather?")
+print("What activity were you doing?")
+activities = {option: False for option in ["walking", "running", "frisbee", "cycling", "other"]}
+get_clothing_input(activities, "Activity")
+
+print("What sports would you play sports in this weather?")
 sports = {}
 sports['running'] = get_sport_input("running")
 sports['frisbee'] = get_sport_input("frisbee")
 sports['cycling'] = get_sport_input("cycling")
 
-add_data(date, time, location, weather, outerwear, bottoms, footwear, accessories, sports)
+add_data(date, time, location, weather, outerwear, bottoms, footwear, accessories, sports, activities)
 
 # print(f'''Weather on {date} at {time}:XX in {location}:
 # Temperature: {weather["temperature"]}°C
@@ -268,3 +278,8 @@ add_data(date, time, location, weather, outerwear, bottoms, footwear, accessorie
 # UV Index Max: {weather["uv_index_max"]}
 # Shortwave Radiation Sum: {weather["shortwave_radiation_sum"]} MJ/m²
 # ''')
+
+# update the json column
+# UPDATE ClothingWeather
+# SET SportsData = '{"running": true, "frisbee": false, "cycling": false}'
+# WHERE date = '2024-06-20' and time = 11;

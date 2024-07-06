@@ -130,7 +130,6 @@ def add_data(date, time, location, weather, outerwear, bottoms, footwear, access
                     )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ''', (date, time, location, weather_json, clothing_json, sports_json, other_data, activity_json))
-        print("Data added successfully.")
         conn.commit()
     
 def remove_last_entry(database=database):
@@ -183,10 +182,19 @@ def get_clothing_input(options, prompt):
             return
         selected_items = [item.strip().lower() for item in selection.split(',')]
         for item in selected_items:
-            if item not in options.keys():
-                print(f"Invalid option '{item}'. Choose from the provided options.")
-                break
-            options[item] = True
+            try:
+                item_index = int(item)-1
+                if item_index in range(len(options)):
+                    options[list(options.keys())[item_index]] = True
+                else:
+                    print(f"Invalid option '{item}'. Choose from the provided options.")
+                    break
+            except ValueError:
+                if item in options.keys():
+                    options[item] = True
+                else:
+                    print(f"Invalid option '{item}'. Choose from the provided options.")
+                    break
         else:
             return
 

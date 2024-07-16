@@ -38,8 +38,9 @@ def geocode_city(city):
         raise
 
 # function to fetch weather data
-def get_weather(location, hour):
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={location[0]}&longitude={location[1]}&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,cloud_cover_low,visibility,et0_fao_evapotranspiration,wind_speed_10m,wind_direction_10m,wind_gusts_10m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,daylight_duration,sunshine_duration,uv_index_max,shortwave_radiation_sum&timezone=auto&forecast_days=1"
+def get_weather(location, hour, past_days):
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={location[0]}&longitude={location[1]}&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,cloud_cover_low,visibility,et0_fao_evapotranspiration,wind_speed_10m,wind_direction_10m,wind_gusts_10m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,daylight_duration,sunshine_duration,uv_index_max,shortwave_radiation_sum&timezone=auto&past_days={past_days}&forecast_days=1"
+    # print(url)
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -145,24 +146,33 @@ def remove_last_entry(database=database):
         conn.commit()
 
 # functions to get user input
-def get_hour_input(remove_last_entry):
+def get_time_input(remove_last_entry):
+    print(f"Enter the hour (HH) or leave blank for current hour, and (optionally) how many days prior (max 92);\ne.g. if yesterday 4pm, type: 16 1")
     while True:
-        time = input("- Enter the hour (HH) [must be today] or leave blank for current hour: ")
-        if time == "delete":
+        selection = input("- Enter the hour (and day if not today): ")
+        if selection == "delete":
             remove_last_entry()
             exit()
-        if not time:
-            return int(datetime.datetime.now().strftime('%H'))
+        if not selection:
+            return int(datetime.datetime.now().strftime('%H')), 0
+        parts = selection.split()
         try:
-            time = int(time)
-            if 0 <= time <= 23:
-                return time
-            print("Invalid hour. Must be between 0 and 23.")
+            hour = int(parts[0])
+            if not 0 <= hour <= 23:
+                print("Invalid hour. Must be between 0 and 23.")
+                continue
+            day = 0
+            if len(parts) > 1:
+                day = int(parts[1])
+                if not 0 <= day <= 92:
+                    print("Invalid day. Must be between 0 and 92 past days.")
+                    continue
+            return hour, day
         except ValueError:
-            print("Invalid input. Must be an integer.")
+            print("Invalid input. Hour (and day if provided) must be integer.")
 
 def get_location_input():
-    location_input = input("- Enter the location (City, Country) or leave blank for Markham: ")
+    location_input = input("- Enter the location (City, Country) or leave blank for Markham: ").strip()
     location = location_input if location_input else "Markham, Canada"
     return location
 
@@ -208,8 +218,8 @@ def get_sport_input(prompt):
         print("Invalid input. Must be 'y' or 'n'.")
 
 # ask user for details
-date = datetime.datetime.now().strftime('%Y-%m-%d')
-time = get_hour_input(remove_last_entry)
+time, past_days = get_time_input(remove_last_entry)
+date = (datetime.datetime.now() - datetime.timedelta(days=past_days)).strftime('%Y-%m-%d')
 location = get_location_input()
 print("Fetching weather data...")
 
@@ -223,7 +233,7 @@ except Exception as e:
 
 # Fetch weather data
 try:
-    weather = get_weather(location_coords, time)
+    weather = get_weather(location_coords, time, past_days)
 except Exception as e:
     print(f"Error fetching temperature: {e}")
     conn.close()

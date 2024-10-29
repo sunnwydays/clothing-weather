@@ -180,15 +180,14 @@ def get_clothing_input(options, prompt):
     while True:
         selection = input(f"- {prompt} ({', '.join(options.keys())}): ").strip()
         if not selection:
-            match prompt:
-                case "Bottoms":
-                    options["athletic"] = True
-                case "Footwear":
-                    options["running"] = True
-                case "Activity":
-                    options["walking"] = True
-                case _:
-                    return
+            if prompt == "Bottoms":
+                options["athletic"] = True
+            elif prompt == "Footwear":
+                options["running"] = True
+            elif prompt == "Activity":
+                options["walking"] = True
+            else:
+                return
             return
         selected_items = [item.strip().lower() for item in selection.split(',')]
         for item in selected_items:

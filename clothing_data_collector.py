@@ -1,6 +1,7 @@
 import sqlite3, requests, datetime, json
 
-database = 'clothing_data.db'
+# database = 'clothing_data.db'
+database = '/home/sunny/Documents/code/clothing-weather/clothing_data.db'
 
 with sqlite3.connect(database) as conn:
     cursor = conn.cursor()

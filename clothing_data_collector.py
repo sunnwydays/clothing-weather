@@ -173,8 +173,8 @@ def get_time_input(remove_last_entry):
             print("Invalid input. Hour (and day if provided) must be integer.")
 
 def get_location_input():
-    location_input = input("- Enter the location (City, Country) or leave blank for Markham: ").strip()
-    location = location_input if location_input else "Markham, Canada"
+    location_input = input("- Enter the location (City, Country) or leave blank for Toronto: ").strip()
+    location = location_input if location_input else "Toronto, Canada"
     return location
 
 def get_clothing_input(options, prompt):

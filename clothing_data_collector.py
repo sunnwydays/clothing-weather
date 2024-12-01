@@ -210,11 +210,11 @@ def get_clothing_input(options, prompt):
 
 def get_sport_input(prompt):
     while True:
-        suitable = input(f"- Suitable for {prompt} (Y/n): ").strip().lower()
-        if not suitable or suitable == 'y':
+        suitable = input(f"- Suitable for {prompt} (y/N): ").strip().lower()
+        if not suitable or suitable == 'n':
+            return False
+        if suitable == 'y':
             return True
-        if suitable == 'n':
-            return False        
         print("Invalid input. Must be 'y' or 'n'.")
 
 # ask user for details

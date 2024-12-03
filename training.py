@@ -24,9 +24,8 @@ X['sunset'] = pd.to_datetime(X['sunset'], format='%H:%M').dt.hour * 60 + pd.to_d
 print(X.describe())
 
 # Experiment with what features (columns) to include
-# * better without sunrise and sunset
 features_to_exclude = [
-    'sunrise', 
+    # 'sunrise', 
     'sunset',
     # 'shortwave_radiation_sum',
 ]
@@ -52,7 +51,7 @@ print(y_train_clothing.columns)
 
 # Create models using RandomForest
 clothing_model = RandomForestClassifier(class_weight=clothing_weights, random_state=8)
-sports_model = RandomForestClassifier(random_state=8)
+sports_model = RandomForestClassifier(random_state=8, )
 
 # Combine models in MultiOutputClassifier for discrete predictions
 multi_output_model = MultiOutputClassifier(estimator=clothing_model)

@@ -197,8 +197,21 @@ def get_clothing_input(options, prompt):
                 if item_index in range(len(options)):
                     options[list(options.keys())[item_index]] = True
                 else:
-                    print(f"Invalid option '{item}'. Choose from the provided options.")
-                    break
+                    # Allow non-comma separated numbers
+                    valid_digit = False
+                    first_digit = True
+                    for d in item:
+                        digit_index = int(d) - 1
+                        if digit_index in range(len(options)):
+                            options[list(options.keys())[digit_index]] = True
+                            valid_digit = True
+                            first_digit = False
+                        elif not first_digit:
+                            print(f"Invalid option '{digit_index+1}'. Provide a valid index (1-indexed).")
+                            break
+                    if not valid_digit:
+                        print(f"Invalid option '{item}'. Provide a valid index (1-indexed).")
+                        break
             except ValueError:
                 if item in options.keys():
                     options[item] = True
